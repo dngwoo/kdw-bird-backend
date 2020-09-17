@@ -10,7 +10,6 @@ const db = {}
 // 이제 sequelize라는 변수에 연결정보가 담겨져있다.
 const sequelize = new Sequelize(config.database, config.username, config.password, config)
 
-
 Object.keys(db).forEach(modelName => {
   if (db[modelName].associate) {
     db[modelName].associate(db);

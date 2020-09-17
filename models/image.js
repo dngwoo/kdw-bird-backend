@@ -10,6 +10,8 @@ module.exports = (sequelize, DataTypes) => {
         charset: 'utf8',
         collate: 'utf8_general_ci' // 한글 저장
     });
-    Image.associate = (db) => {}
+    Image.associate = (db) => {
+        db.Image.belongsTo(db.Post) // 이미지는 어떤 포스트에게 속해있다.
+    }
     return Image;
 }
