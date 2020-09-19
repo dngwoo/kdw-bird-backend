@@ -3,21 +3,21 @@
     "username": "root",
     "password": "424800",
     "database": "kdw-nodebird",
-    "host": "127.0.0.1",
+    "host": "localhost",
     "dialect": "mysql"
   },
   "test": {
     "username": "root",
     "password": "424800",
     "database": "kdw-nodebird",
-    "host": "127.0.0.1",
+    "host": "localhost",
     "dialect": "mysql"
   },
   "production": {
     "username": "root",
     "password": "424800",
     "database": "kdw-nodebird",
-    "host": "127.0.0.1",
+    "host": "localhost",
     "dialect": "mysql"
   }
 }
