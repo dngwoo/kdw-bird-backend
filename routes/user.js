@@ -1,5 +1,5 @@
 const express = require("express");
-const { User } = require("../mdoels"); // db.User을 구조분해할당으로 받음
+const { User } = require("../models"); // db.User을 구조분해할당으로 받음
 const bcrypt = require("bcrypt");
 const userRouter = express.Router();
 
@@ -47,4 +47,4 @@ userRouter.post("/", async (req, res, next) => {
   }
 });
 
-module.exports = router;
+module.exports = userRouter;
