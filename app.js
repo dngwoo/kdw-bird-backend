@@ -1,8 +1,10 @@
 const express = require("express");
 const userRouter = require("./routes/user");
 const postRouter = require("./routes/post");
+const passportConfig = require("./passport");
 const { sequelize } = require("./models");
 const cors = require("cors");
+
 const app = express();
 
 const PORT = 3065;
@@ -18,6 +20,7 @@ app.use(
 // ex) 프론트에서 signup의 action.data를 받아서 해석을 한 뒤 req.body에 실어준다.
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+passportConfig();
 
 sequelize
   .sync()
@@ -31,8 +34,8 @@ app.get("/", (req, res) => {
 });
 
 // prefix 처럼 post가 자동으로 붙는다.
-app.use("/post", postRouter);
 app.use("/user", userRouter);
+app.use("/post", postRouter);
 
 app.listen(PORT, () => {
   console.log(`http://localhost:${PORT} 열림`);

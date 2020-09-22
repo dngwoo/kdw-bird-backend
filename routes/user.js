@@ -1,7 +1,36 @@
 const express = require("express");
 const { User } = require("../models"); // db.User을 구조분해할당으로 받음
 const bcrypt = require("bcrypt");
+const passport = require("passport");
+
 const userRouter = express.Router();
+
+userRouter.post("/login", (req, res, next) => {
+  passport.authenticate("local", (error, user, { reason }) => {
+    // (err, user, info) <- 서버에러, 유저값, 클라이언트 에러
+
+    // local에서 에러 처리
+    // 서버에러
+    if (error) {
+      console.error(error);
+      next(error); // 에러처리를 익스프레스로 넘김
+    }
+
+    // 클라에러
+    if (reason) {
+      res.status(401).send(reason);
+    }
+
+    // passport에서 에러 처리
+    return req.login(user, async (loginErr) => {
+      if (loginErr) {
+        console.error(loginErr);
+        return next(loginErr);
+      }
+      return res.json(user); // 프론트로 json 데이터 전송
+    });
+  })(req, res, next);
+});
 
 userRouter.post("/", async (req, res, next) => {
   try {
