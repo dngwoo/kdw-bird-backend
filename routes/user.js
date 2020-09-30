@@ -6,7 +6,7 @@ const passport = require("passport");
 const userRouter = express.Router();
 
 userRouter.post("/login", (req, res, next) => {
-  passport.authenticate("local", (error, user, { reason }) => {
+  passport.authenticate("local", (error, user, info) => {
     // (err, user, info) <- 서버에러, 유저값, 클라이언트 에러
 
     // local에서 에러 처리
@@ -17,8 +17,8 @@ userRouter.post("/login", (req, res, next) => {
     }
 
     // 클라에러
-    if (reason) {
-      res.status(401).send(reason);
+    if (info) {
+      res.status(401).send(info.reason);
     }
 
     // passport에서 에러 처리
@@ -27,7 +27,8 @@ userRouter.post("/login", (req, res, next) => {
         console.error(loginErr);
         return next(loginErr);
       }
-      return res.json(user); // 프론트로 json 데이터 전송
+      // res.setHeader("Cookie", "cxlhy");를 자동으로 실행시킨다. 두번째인자는 내 데이터를 기반으로 만들어진 쿠키값이다.
+      return res.status(200).json(user); // 프론트로 json 데이터 + 쿠키값 전송
     });
   })(req, res, next);
 });
@@ -74,6 +75,13 @@ userRouter.post("/", async (req, res, next) => {
     // 에러 처리 미들웨어로 보내게 된다.
     next(error); // status - 500 (서버쪽 에러임.)
   }
+});
+
+userRouter.post("/user/logout", (req, res, next) => {
+  // 쿠키 지우고 세션지우면 끝임.
+  req.logout();
+  req.session.destroy();
+  res.send("ok");
 });
 
 module.exports = userRouter;
