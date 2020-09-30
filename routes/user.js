@@ -18,7 +18,7 @@ userRouter.post("/login", (req, res, next) => {
 
     // 클라에러
     if (info) {
-      res.status(401).send(info.reason); // 이 reason이 프론트에서 받아서 화면에 뽑아주어야 한다.
+      return res.status(401).send(info.reason); // 이 reason이 프론트에서 받아서 화면에 뽑아주어야 한다.
     }
 
     // passport에서 에러 처리
