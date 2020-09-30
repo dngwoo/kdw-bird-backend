@@ -59,6 +59,10 @@ app.get("/", (req, res) => {
 app.use("/user", userRouter);
 app.use("/post", postRouter);
 
+// 에러처리 미들웨어는 내부적으로 존재하지만 밑의 코드처럼 커스텀할 수 있음.
+// next(err)을 하게 되면 이 미들웨어로 오게 된다
+// app.use((err, req, res, next) => {});
+
 app.listen(PORT, () => {
   console.log(`http://localhost:${PORT} 열림`);
 });

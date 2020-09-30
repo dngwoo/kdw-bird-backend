@@ -2,11 +2,12 @@ const express = require("express");
 const { User, Post } = require("../models"); // db.User을 구조분해할당으로 받음
 const bcrypt = require("bcrypt");
 const passport = require("passport");
+const { isLoggedIn, isNotLoggedIn } = require("./middlewares");
 
 const userRouter = express.Router();
 
 userRouter.post("/login", (req, res, next) => {
-  passport.authenticate("local", (error, user, info) => {
+  passport.authenticate("local", isNotLoggedIn, (error, user, info) => {
     // (err, user, info) <- 서버에러, 유저값, 클라이언트 에러
 
     // local에서 에러 처리
@@ -54,7 +55,7 @@ userRouter.post("/login", (req, res, next) => {
   })(req, res, next);
 });
 
-userRouter.post("/", async (req, res, next) => {
+userRouter.post("/", isNotLoggedIn, async (req, res, next) => {
   try {
     // POST /user/
     const exUser = await User.findOne({
@@ -98,7 +99,7 @@ userRouter.post("/", async (req, res, next) => {
   }
 });
 
-userRouter.post("/user/logout", (req, res, next) => {
+userRouter.post("/logout", isLoggedIn, (req, res, next) => {
   // 쿠키 지우고 세션지우면 끝임.
   req.logout();
   req.session.destroy();
