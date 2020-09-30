@@ -6,8 +6,8 @@ const { isLoggedIn, isNotLoggedIn } = require("./middlewares");
 
 const userRouter = express.Router();
 
-userRouter.post("/login", (req, res, next) => {
-  passport.authenticate("local", isNotLoggedIn, (error, user, info) => {
+userRouter.post("/login", isNotLoggedIn, (req, res, next) => {
+  passport.authenticate("local", (error, user, info) => {
     // (err, user, info) <- 서버에러, 유저값, 클라이언트 에러
 
     // local에서 에러 처리
