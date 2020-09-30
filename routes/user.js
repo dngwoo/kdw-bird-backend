@@ -1,5 +1,5 @@
 const express = require("express");
-const { User } = require("../models"); // db.User을 구조분해할당으로 받음
+const { User, Post } = require("../models"); // db.User을 구조분해할당으로 받음
 const bcrypt = require("bcrypt");
 const passport = require("passport");
 
@@ -18,7 +18,7 @@ userRouter.post("/login", (req, res, next) => {
 
     // 클라에러
     if (info) {
-      res.status(401).send(info.reason);
+      res.status(401).send(info.reason); // 이 reason이 프론트에서 받아서 화면에 뽑아주어야 한다.
     }
 
     // passport에서 에러 처리
@@ -27,8 +27,29 @@ userRouter.post("/login", (req, res, next) => {
         console.error(loginErr);
         return next(loginErr);
       }
+
+      const fullUserWithoutPassword = await User.findOne({
+        where: { id: user.id },
+        // attributes: [id, nickname, email],
+        attributes: {
+          excludee: ["password"],
+        },
+        include: [
+          {
+            model: Post,
+          },
+          {
+            model: User,
+            as: "Followings", // as를 models에서 써줬다면 여기서도 그대로 써줘야 함.
+          },
+          {
+            model: User,
+            as: "Followers", // as를 models에서 써줬다면 여기서도 그대로 써줘야 함.
+          },
+        ],
+      });
       // res.setHeader("Cookie", "cxlhy");를 자동으로 실행시킨다. 두번째인자는 내 데이터를 기반으로 만들어진 쿠키값이다.
-      return res.status(200).json(user); // 프론트로 json 데이터 + 쿠키값 전송
+      return res.status(200).json(fullUserWithoutPassword); // 프론트로 json 데이터 + 쿠키값 전송
     });
   })(req, res, next);
 });
