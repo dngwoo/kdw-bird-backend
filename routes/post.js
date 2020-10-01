@@ -22,7 +22,7 @@ router.post("/:postId/comment", isLoggedIn, async (req, res, next) => {
   // POST /post/1/comment
   try {
     const post = await Post.findOne({
-      where: { i8d: req.params.postId },
+      where: { id: req.params.postId },
     });
 
     if (!post) {

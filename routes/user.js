@@ -33,7 +33,7 @@ userRouter.post("/login", isNotLoggedIn, (req, res, next) => {
         where: { id: user.id },
         // attributes: [id, nickname, email],
         attributes: {
-          excludee: ["password"],
+          exclude: ["password"],
         },
         include: [
           {
