@@ -6,6 +6,44 @@ const { isLoggedIn, isNotLoggedIn } = require("./middlewares");
 
 const userRouter = express.Router();
 
+userRouter.get("/", async (req, res, next) => {
+  // Get /user
+  try {
+    // 로그아웃 상태 일 수도 있으니 if(req.user) 사용
+    if (req.user) {
+      const fullUserWithoutPassword = await User.findOne({
+        where: { id: req.user.id },
+        // attributes: [id, nickname, email],
+        attributes: {
+          exclude: ["password"],
+        },
+        include: [
+          {
+            attributes: ["id"],
+            model: Post,
+          },
+          {
+            attributes: ["id"],
+            model: User,
+            as: "Followings", // as를 models에서 써줬다면 여기서도 그대로 써줘야 함.
+          },
+          {
+            attributes: ["id"],
+            model: User,
+            as: "Followers", // as를 models에서 써줬다면 여기서도 그대로 써줘야 함.
+          },
+        ],
+      });
+      res.status(200).json(fullUserWithoutPassword);
+    } else {
+      res.status(200).json(null);
+    }
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+});
+
 userRouter.post("/login", isNotLoggedIn, (req, res, next) => {
   passport.authenticate("local", (error, user, info) => {
     // (err, user, info) <- 서버에러, 유저값, 클라이언트 에러
@@ -37,13 +75,16 @@ userRouter.post("/login", isNotLoggedIn, (req, res, next) => {
         },
         include: [
           {
+            attributes: ["id"],
             model: Post,
           },
           {
+            attributes: ["id"],
             model: User,
             as: "Followings", // as를 models에서 써줬다면 여기서도 그대로 써줘야 함.
           },
           {
+            attributes: ["id"],
             model: User,
             as: "Followers", // as를 models에서 써줬다면 여기서도 그대로 써줘야 함.
           },
