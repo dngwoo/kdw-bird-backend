@@ -30,8 +30,8 @@ passportConfig();
 // cors 관련 미들웨어
 app.use(
   cors({
-    origin: "*",
-    credentials: false,
+    origin: "http://localhost:3000",
+    credentials: true,
   })
 );
 // req.body를 쓰기위한 2가지 미들웨어

@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const { Post, Comment, Image } = require("../models");
 
 const { isLoggedIn } = require("./middlewares"); // 로그인 했는지 확인하기 위해 사용
 
@@ -10,7 +11,22 @@ router.post("/", isLoggedIn, async (req, res, next) => {
       content: req.body.content,
       UserId: req.user.id, // passport/index.js에서 deserialize에서 만들어짐.
     });
-    res.status(201).json(post);
+
+    const fullPost = await Post.findOne({
+      where: { id: post.id },
+      include: [
+        {
+          model: Image,
+        },
+        {
+          model: Comment,
+        },
+        {
+          model: User,
+        },
+      ],
+    });
+    res.status(201).json(fullPost);
   } catch (error) {
     console.error(error);
     next(error);
