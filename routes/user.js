@@ -147,4 +147,24 @@ userRouter.post("/logout", isLoggedIn, (req, res, next) => {
   res.send("ok");
 });
 
+userRouter.patch("/nickname", isLoggedIn, async (req, res, next) => {
+  try {
+    await User.update(
+      {
+        nickname: req.body.nickname,
+      },
+      {
+        where: {
+          id: req.user.id,
+        },
+      }
+    );
+    console.log(req.body.nickname);
+    res.status(200).json({ nickname: req.body.nickname });
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+});
+
 module.exports = userRouter;

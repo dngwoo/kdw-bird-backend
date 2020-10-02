@@ -45,6 +45,23 @@ postRouter.post("/", isLoggedIn, async (req, res, next) => {
   }
 });
 
+postRouter.delete("/:postId", isLoggedIn, async (req, res, next) => {
+  // Delete /post/10
+  try {
+    await Post.destroy({
+      where: {
+        id: req.params.postId,
+        UserId: req.user.id, // 내가 쓴 게시글인지 확인. 남의 것을 못지우게 만듬
+      },
+    });
+
+    res.status(200).json({ PostId: parseInt(req.params.postId, 10) });
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+});
+
 // :postId 처럼 주소에서 가변적으로 바뀌는 부분을 parameter 라고 부른다.
 postRouter.post("/:postId/comment", isLoggedIn, async (req, res, next) => {
   // POST /post/1/comment
