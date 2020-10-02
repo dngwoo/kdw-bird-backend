@@ -1,10 +1,10 @@
 const express = require("express");
-const router = express.Router();
+const postRouter = express.Router();
 const { Post, Comment, Image, User } = require("../models");
 
 const { isLoggedIn } = require("./middlewares"); // 로그인 했는지 확인하기 위해 사용
 
-router.post("/", isLoggedIn, async (req, res, next) => {
+postRouter.post("/", isLoggedIn, async (req, res, next) => {
   // POST /post
   try {
     const post = await Post.create({
@@ -22,14 +22,19 @@ router.post("/", isLoggedIn, async (req, res, next) => {
           model: Comment,
           include: [
             {
-              model: User,
+              model: User, // 댓글 작성자
               attributes: ["id", "nickname"],
             },
           ],
         },
         {
-          model: User,
+          model: User, // 게시글 작성자
           attributes: ["id", "nickname"],
+        },
+        {
+          model: User, // 좋아요 누른 사람
+          as: "Likers",
+          attributes: ["id"],
         },
       ],
     });
@@ -41,7 +46,7 @@ router.post("/", isLoggedIn, async (req, res, next) => {
 });
 
 // :postId 처럼 주소에서 가변적으로 바뀌는 부분을 parameter 라고 부른다.
-router.post("/:postId/comment", isLoggedIn, async (req, res, next) => {
+postRouter.post("/:postId/comment", isLoggedIn, async (req, res, next) => {
   // POST /post/1/comment
   try {
     const post = await Post.findOne({
@@ -74,4 +79,35 @@ router.post("/:postId/comment", isLoggedIn, async (req, res, next) => {
   }
 });
 
-module.exports = router;
+postRouter.patch("/:postId/like", isLoggedIn, async (req, res, next) => {
+  try {
+    const post = await Post.findOne({
+      where: { id: req.params.postId },
+    });
+    if (!post) {
+      return res.status(403).send("게시글이 존재하지 않습니다.");
+    }
+    await post.addLikers(req.user.id); // post.addLikers는 테이블 관계에 의해 만들어진다.
+    res.json({ PostId: post.id, UserId: req.user.id });
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+});
+postRouter.delete("/:postId/like", isLoggedIn, async (req, res, next) => {
+  try {
+    const post = await Post.findOne({
+      where: { id: req.params.postId },
+    });
+    if (!post) {
+      return res.status(403).send("게시글이 존재하지 않습니다.");
+    }
+    await post.removeLikers(req.user.id);
+    res.json({ PostId: post.id, UserId: req.user.id });
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+});
+
+module.exports = postRouter;

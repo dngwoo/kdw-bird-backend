@@ -30,6 +30,11 @@ postsRouter.get("/", async (req, res, next) => {
             },
           ],
         },
+        {
+            model: User,
+            as: "Likers",
+            attributes: ['id']
+        }
       ],
     }); // 모든 게시글 가져옴
     res.status(200).json(posts);
