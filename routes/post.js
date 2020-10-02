@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { Post, Comment, Image } = require("../models");
+const { Post, Comment, Image, User } = require("../models");
 
 const { isLoggedIn } = require("./middlewares"); // 로그인 했는지 확인하기 위해 사용
 
@@ -20,9 +20,16 @@ router.post("/", isLoggedIn, async (req, res, next) => {
         },
         {
           model: Comment,
+          include: [
+            {
+              model: User,
+              attributes: ["id", "nickname"],
+            },
+          ],
         },
         {
           model: User,
+          attributes: ["id", "nickname"],
         },
       ],
     });
@@ -47,10 +54,20 @@ router.post("/:postId/comment", isLoggedIn, async (req, res, next) => {
 
     const comment = await Comment.create({
       content: req.body.content,
-      PostId: req.params.postId, // :postId로 접근 가능
+      PostId: parseInt(req.params.postId), // :postId로 접근 가능
       UserId: req.user.id, // passport/index.js에서 deserialize에서 만들어짐.
     });
-    res.status(201).json(comment);
+
+    const fullComment = await Comment.findOne({
+      where: { id: comment.id },
+      include: [
+        {
+          model: User,
+          attributes: ["id", "nickname"],
+        },
+      ],
+    });
+    res.status(201).json(fullComment);
   } catch (error) {
     console.error(error);
     next(error);
