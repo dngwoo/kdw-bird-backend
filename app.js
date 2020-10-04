@@ -10,6 +10,7 @@ const postsRouter = require("./routes/posts");
 const session = require("express-session");
 const { sequelize } = require("./models");
 const userRouter = require("./routes/user");
+const path = require("path");
 
 dotenv.config();
 
@@ -29,6 +30,7 @@ passportConfig();
 
 //middelwares
 
+app.use("/", express.static(path.join(__dirname, "uploads"))); // 운영체제마다 경로가 다르기 때문에 코어모듈 path 사용
 app.use(morgan("dev")); // Get /user 304 5.702ms 와 같이 프론트->백엔드 요청이 나옴.
 
 // cors 관련 미들웨어
