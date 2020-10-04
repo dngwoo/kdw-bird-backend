@@ -1,7 +1,7 @@
 const express = require("express");
 const postRouter = express.Router();
 const path = require("path");
-const { Post, Comment, Image, User } = require("../models");
+const { Post, Comment, Image, User, Hashtag } = require("../models");
 const multer = require("multer"); // form마다 데이터 전송이 다르기 때문에 router마다 적용시켜준다.
 const fs = require("fs");
 
@@ -37,11 +37,28 @@ const upload = multer({
 
 postRouter.post("/", isLoggedIn, upload.none(), async (req, res, next) => {
   // POST /post
+
   try {
     const post = await Post.create({
       content: req.body.content,
       UserId: req.user.id, // passport/index.js에서 deserialize에서 만들어짐.
     });
+
+    const hashtags = req.body.content.match(/#[^\s]+/g);
+    if (hashtags) {
+      const result = await Promise.all(
+        hashtags.map(
+          // findOrCreate는 있으면 가져오고 없으면 생성한다라는 뜻임.
+          // 가져와서 할건 없음. 있는지 없는지 파악하는게 중요.
+          (tag) =>
+            Hashtag.findOrCreate({
+              where: { name: tag.slice(1).toLowerCase() }, // #은 빼고 소문자로 바꿔서 넣는다.
+            })
+        )
+      );
+      // [[노드, true],[익스프레스, true]] 이렇게 반환 된다. 두번째 boolean값은 find한건지 create 한건지 알려줌
+      await post.addHashtags(result.map((v) => v[0])); // v[0]은 노드, 익스프레스를 의미
+    }
 
     if (req.body.image) {
       if (Array.isArray(req.body.image)) {

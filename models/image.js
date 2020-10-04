@@ -3,7 +3,7 @@ module.exports = (sequelize, DataTypes) => {
   const Image = sequelize.define(
     "Image",
     {
-      // MySQL에는 Images 테이블 생성, 소문자 + 복수형으로 바뀜
+      // MySQL에는 Images 테이블 생성, 복수형으로 바뀜
       // id는 굳이 안만들어주어도 알아서 생성해서 넣어준다.
       src: {
         type: DataTypes.STRING(200), // 이미지는 url이라서 매우 길어질 수 있기 때문
