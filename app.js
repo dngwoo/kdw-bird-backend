@@ -40,8 +40,8 @@ app.use(
 );
 // req.body를 쓰기위한 2가지 미들웨어
 // ex) 프론트에서 signup의 action.data를 받아서 해석을 한 뒤 req.body에 실어준다.
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json()); // axios
+app.use(express.urlencoded({ extended: true })); // 일반 form
 
 // passport 관련 미들웨어
 app.use(cookieParser(process.env.COOKIE_SECRET));

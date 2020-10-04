@@ -1,6 +1,17 @@
 const express = require("express");
 const postRouter = express.Router();
+const path = require("path");
 const { Post, Comment, Image, User } = require("../models");
+const multer = require("multer"); // form마다 데이터 전송이 다르기 때문에 router마다 적용시켜준다.
+const fs = require("fs");
+
+try {
+  fs.accessSync("uploads"); // uploads 파일이 있는지 체크
+} catch (error) {
+  // uploads 파일이 없다면
+  console.log("uploads 폴더가 없으므로 생성합니다.");
+  fs.mkdirSync("uploads");
+}
 
 const { isLoggedIn } = require("./middlewares"); // 로그인 했는지 확인하기 위해 사용
 
@@ -126,5 +137,39 @@ postRouter.delete("/:postId/like", isLoggedIn, async (req, res, next) => {
     next(error);
   }
 });
+
+const upload = multer({
+  // 나중에는 s3에 저장할 것이다.
+  // 이유는 서버는 나중에 스케일링이라는 것을 하게 된다.
+  // 그래서 서버가 여러대가 되면 이미지도 여러개가 되어버린다.
+  storage: multer.diskStorage({
+    // 컴퓨터의 하드디스크에 저장
+    destination(req, file, done) {
+      done(null, "uploads"); // uploads라는 폴더에 저장하겠다라는 뜻
+    },
+    filename(req, file, done) {
+      // 제로초.png
+      // 파일이름이 겹치지 않게 해줘야 된다.
+      const ext = path.extname(file.originalname); // 확장자 추출(png)
+      const basename = path.basename(file.originalname, ext); // 제로초
+      done(null, basename + new Date().getTime() + ext); // 제로초15184712891.png
+    },
+  }),
+  limits: { fileSize: 20 * 1024 * 1024 }, // 20MB <- 해주는 이유는 파일이 너무 크면 서버공격이 되기 때문
+});
+
+// 여러장 - upload.array('image')
+// 한장 - upload.single('image')
+// 텍스트만 - upload.none()
+postRouter.post(
+  "/images",
+  upload.array("image"),
+  isLoggedIn,
+  (req, res, next) => {
+    // Post /post/images
+    console.log(req.files); // 여기에 저장된다. 업로드 어떻게 되었는지 확인 가능
+    res.json(req.files.map((v) => v.filename));
+  }
+);
 
 module.exports = postRouter;
