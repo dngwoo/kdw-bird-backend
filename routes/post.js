@@ -197,4 +197,95 @@ postRouter.post("/images", upload.array("image"), isLoggedIn, (req, res) => {
   res.json(req.files.map((v) => v.filename)); // map을 이용하여 파일이름만 가진 새로운 배열 생성
 });
 
+// 리트윗 관련 라우터
+postRouter.post("/:postId/retweet", isLoggedIn, async (req, res, next) => {
+  // POST /post/1/comment
+  try {
+    const post = await Post.findOne({
+      where: { id: req.params.postId },
+      include: [
+        {
+          model: Post,
+          as: "Retweet",
+        },
+      ],
+    });
+
+    if (!post) {
+      return res.status(403).send("존재하지 않는 게시글입니다."); // forbidden status = 403
+    }
+
+    if (
+      req.user.id === post.UserId ||
+      (post.Retweet && post.Retweet.UserId === req.user.id)
+    ) {
+      return res.status(403).send("자신의 글은 리트윗할 수 없습니다.");
+    }
+
+    const retweetTargetId = post.RetweetId || post.id;
+    const exPost = await Post.findOne({
+      where: {
+        UserId: req.user.id,
+        RetweetId: retweetTargetId,
+      },
+    });
+
+    if (exPost) {
+      return res.status(403).send("이미 리트윗 하셨습니다.");
+    }
+
+    const retweet = await Post.create({
+      UserId: req.user.id,
+      RetweetId: retweetTargetId,
+      content: "retweet", // allowNull: false, <- 필수이기 때문에 뭐라도 넣어둔 것임.
+    });
+
+    const retweetWithPrevPost = await Post.findOne({
+      // include가 너무 많아지면 db에서 가져오는 속도가 엄청 느려진다.
+      // 나중에는 router를 한개 더 만들어서 분리 시켜주는 것이 좋다.
+      where: { id: retweet.id },
+      include: [
+        {
+          model: Post,
+          as: "Retweet",
+          include: [
+            {
+              model: User,
+              attributes: ["id", "nickname"],
+            },
+            {
+              model: Image,
+            },
+          ],
+        },
+        {
+          model: User,
+          attributes: ["id", "nickname"],
+        },
+        {
+          model: Image,
+        },
+        {
+          model: Comment,
+          include: [
+            {
+              model: User,
+              attributes: ["id", "nickname"],
+            },
+          ],
+        },
+        {
+          model: User, // 좋아요 누른 사람
+          as: "Likers",
+          attributes: ["id"],
+        },
+      ],
+    });
+    res.status(201).json(retweetWithPrevPost);
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+});
+
 module.exports = postRouter;
