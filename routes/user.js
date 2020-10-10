@@ -9,6 +9,7 @@ const userRouter = express.Router();
 userRouter.get("/", async (req, res, next) => {
   // Get /user
   try {
+    console.log(req.headers); // 쿠키가 제대로 전달되었는지 확인
     // 로그아웃 상태 일 수도 있으니 if(req.user) 사용
     if (req.user) {
       const fullUserWithoutPassword = await User.findOne({
